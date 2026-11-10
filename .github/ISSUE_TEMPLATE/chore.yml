@@ -1,0 +1,22 @@
+name: Chore
+description: A small fix that needs no planning (e.g. fix a typo, update a library)
+title: "[Chore] "
+labels: ["chore"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should change.
+      placeholder: Fix the typo in the README install command.
+    validations:
+      required: true
+
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Definition of done
+      description: How we check it works.
+      placeholder: The install command in the README runs without errors on a fresh Colab.
+    validations:
+      required: true

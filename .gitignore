@@ -1,0 +1,24 @@
+# Data and model outputs (never commit)
+data/
+embeddings/
+*.npy
+*.npz
+*.h5
+*.keras
+checkpoints/
+
+# Secrets
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.vscode/

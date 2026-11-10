@@ -1,0 +1,9 @@
+tensorflow
+numpy
+pandas
+scikit-learn
+matplotlib
+pytest
+# Encoder step only (BiomedCLIP / MONET):
+torch
+open_clip_torch

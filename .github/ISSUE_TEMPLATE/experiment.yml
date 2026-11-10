@@ -1,0 +1,81 @@
+name: Experiment
+description: Test an idea with an unknown outcome (e.g. does MC dropout beat softmax confidence?)
+title: "[Experiment] "
+labels: ["experiment"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Experiments can fail. "It didn't work" is a valid result, so record what you learned in Results before closing.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What question this experiment answers.
+      placeholder: Compare error-detection AUROC of MC dropout spread vs softmax confidence for the MONET head.
+    validations:
+      required: true
+
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: What you expect to happen and why.
+      placeholder: MC dropout will have higher error-detection AUROC because a single softmax pass is often overconfident.
+    validations:
+      required: true
+
+  - type: textarea
+    id: plan
+    attributes:
+      label: Plan
+      description: The steps, including settings you will hold fixed and what you will vary.
+      placeholder: |
+        1. Load saved MONET embeddings and the trained head
+        2. Run 30 MC dropout passes on the validation set
+        3. Compute AUROC for both uncertainty scores
+        4. Save the comparison plot to results/figures/
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: What the agent must NOT touch.
+      placeholder: |
+        - Do not retrain the head
+        - Do not use the official test set
+    validations:
+      required: true
+
+  - type: input
+    id: planning_model
+    attributes:
+      label: Planning model
+      description: Tool and model used to plan this issue.
+      placeholder: e.g. Claude (claude.ai), Opus or Sonnet
+    validations:
+      required: true
+
+  - type: textarea
+    id: planning_chat
+    attributes:
+      label: Planning chat
+      description: Link to the chat, or a short summary of the key prompts and what you accepted or rejected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: results
+    attributes:
+      label: Results
+      description: Fill in when the experiment is done. Settings, numbers, conclusion. Link the plot, and the notebook or commit that produced these numbers.
+      placeholder: |
+        Settings: seed, number of passes, data split, ...
+        Numbers: ...
+        Conclusion: supported / not supported, and what we learned
+        Produced by: notebook or commit link
+    validations:
+      required: false
