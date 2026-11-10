@@ -1,0 +1,87 @@
+name: Feature
+description: A planned code change or new feature (e.g. add a data loader for the training set)
+title: "[Feature] "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Plan with a planning agent first, then fill this in. Keep it small: if the plan has more than ~5 steps, split it into several issues.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should change, in one or two sentences.
+      placeholder: Add a function that splits HAM10000 into train/val by lesion_id so no lesion is in both sets.
+    validations:
+      required: true
+
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Definition of done
+      description: How we check it works. Make it concrete and testable.
+      placeholder: |
+        - `pytest tests/test_split.py` passes
+        - No lesion_id appears in both train and val
+        - Train/val class proportions differ by less than 2 percentage points
+    validations:
+      required: true
+
+  - type: textarea
+    id: plan
+    attributes:
+      label: Plan
+      description: The steps, in order.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: What the agent must NOT touch (files, folders, behaviour).
+      placeholder: |
+        - Do not change src/models.py
+        - Do not touch the data/ folder
+    validations:
+      required: true
+
+  - type: input
+    id: planning_model
+    attributes:
+      label: Planning model
+      description: Tool and model used to plan this issue.
+      placeholder: e.g. Claude (claude.ai), Opus or Sonnet
+    validations:
+      required: true
+
+  - type: textarea
+    id: planning_chat
+    attributes:
+      label: Planning chat
+      description: Link to the chat, or a short summary of the key prompts and what you accepted or rejected.
+      placeholder: |
+        Link: ...
+        Key prompts: ...
+        What we changed from the agent's suggestion and why: ...
+    validations:
+      required: true
+
+  - type: input
+    id: branch
+    attributes:
+      label: Branch (optional)
+      description: "Naming convention: <type>/<issue-number>-short-name"
+      placeholder: feature/<issue-number>-short-name
+
+  - type: input
+    id: related
+    attributes:
+      label: Related issues (optional)
+      placeholder: "#12, #15"
