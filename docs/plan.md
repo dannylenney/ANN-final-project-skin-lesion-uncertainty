@@ -216,7 +216,7 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
 **T3.1 Doubt scores** [Feature] (can start any time, uses fake data)
 - `src/doubt.py`: `softmax_doubt`, `ensemble_entropy`, `seed_disagreement`, `cross_model_disagreement`, plus `mc_dropout_probs` (stretch).
 - Done when:
-  - [ ] Unit tests on small hand-made probability arrays with known answers pass
+  - [x] Unit tests on small hand-made probability arrays with known answers pass
 
 **T3.2 Does doubt find mistakes?** [Experiment] (H2; needs T2.4, T3.1)
 - `src/evaluate.py`: `error_detection_auroc(doubt, is_wrong)` overall and per true class. If a class has no errors (or only errors), report that instead of a number. Also `referral_curve(...)` vs random referral, with the random curve averaged over many shuffles.
