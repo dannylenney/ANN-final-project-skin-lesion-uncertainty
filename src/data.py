@@ -30,6 +30,11 @@ LESION_GROUPINGS_CSV = "ISIC2018_Task3_Training_LesionGroupings.csv"
 
 DEFAULT_DATA_DIR = "data/raw"
 
+# The committed split, relative to the repo root (not the working directory).
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SPLIT_CSV = REPO_ROOT / "results" / "splits" / "train_val_split.csv"
+EXPECTED_SPLIT_ROWS = 10015
+
 
 def resolve_data_dir(data_dir=None):
     """Return the data folder that holds the HAM10000 files.
@@ -90,6 +95,10 @@ def make_split(df, val_frac=0.2, seed=0):
     Uses StratifiedGroupKFold with round(1 / val_frac) folds and takes the first fold
     as validation, so val_frac is rounded to 1/k (0.2 -> 5 folds). Returns a table
     with image_id and split ("train" or "val"), in the same row order as df.
+
+    Warning: the result depends on the scikit-learn and pandas versions, even with the
+    same seed. For training and evaluation always use load_split(), which reads the
+    committed split file. Only call make_split to deliberately create a new split.
     """
     n_folds = round(1 / val_frac)
     folds = StratifiedGroupKFold(n_splits=n_folds, shuffle=True, random_state=seed)
@@ -97,6 +106,26 @@ def make_split(df, val_frac=0.2, seed=0):
     split = pd.Series("train", index=df.index)
     split.iloc[val_rows] = "val"
     return pd.DataFrame({"image_id": df["image_id"], "split": split})
+
+
+def load_split(path=None, expected_rows=EXPECTED_SPLIT_ROWS):
+    """Return the committed train/val split (image_id, split). Use this, not make_split.
+
+    path defaults to results/splits/train_val_split.csv in the repo root. Raises
+    ValueError if the file doesn't have expected_rows rows, the columns image_id and
+    split, unique image ids, and only "train"/"val" values.
+    """
+    split = pd.read_csv(SPLIT_CSV if path is None else path)
+    if list(split.columns) != ["image_id", "split"]:
+        raise ValueError(f"Expected columns ['image_id', 'split'], got {list(split.columns)}")
+    if len(split) != expected_rows:
+        raise ValueError(f"Expected {expected_rows} rows, got {len(split)}")
+    if split["image_id"].duplicated().any():
+        raise ValueError("Some image_id values appear more than once")
+    unexpected = set(split["split"]) - {"train", "val"}
+    if unexpected:
+        raise ValueError(f"Unexpected split values: {sorted(unexpected)}")
+    return split
 
 
 def split_report(df, split):

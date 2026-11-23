@@ -10,6 +10,7 @@ from src.data import (
     TEST_LABELS_CSV,
     TRAIN_LABELS_CSV,
     load_metadata,
+    load_split,
     load_test,
     make_split,
     resolve_data_dir,
@@ -114,3 +115,29 @@ def test_resolve_data_dir_raises_when_nothing_found(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)  # so data/raw does not exist either
     with pytest.raises(FileNotFoundError):
         resolve_data_dir()
+
+
+def test_load_split_reads_valid_file(tmp_path):
+    path = tmp_path / "split.csv"
+    pd.DataFrame({"image_id": ["A", "B", "C"], "split": ["train", "val", "train"]}).to_csv(path, index=False)
+    split = load_split(path, expected_rows=3)
+    assert split["split"].tolist() == ["train", "val", "train"]
+
+
+@pytest.mark.parametrize("table, rows", [
+    ({"image_id": ["A", "B"], "split": ["train", "val"]}, 3),        # wrong row count
+    ({"image_id": ["A", "B", "C"], "fold": ["train"] * 3}, 3),       # wrong column name
+    ({"image_id": ["A", "B", "C"], "split": ["train", "val", "test"]}, 3),  # unexpected value
+    ({"image_id": ["A", "A", "C"], "split": ["train", "val", "val"]}, 3),   # duplicate image
+])
+def test_load_split_rejects_bad_files(tmp_path, table, rows):
+    path = tmp_path / "split.csv"
+    pd.DataFrame(table).to_csv(path, index=False)
+    with pytest.raises(ValueError):
+        load_split(path, expected_rows=rows)
+
+
+def test_committed_split_file_is_valid(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)  # the default path must not depend on the working directory
+    split = load_split()
+    assert split["split"].value_counts().to_dict() == {"train": 8011, "val": 2004}

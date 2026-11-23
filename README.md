@@ -18,7 +18,15 @@ It covers the 10,015 training images (8,011 train, 2,004 val). The official test
 
 How it was made (`src/data.py`): `StratifiedGroupKFold` with 5 folds, grouped by `lesion_id` and stratified by label, seed 0; the first fold is validation.
 No lesion is in both splits, all 7 classes are in validation, and class shares in train and val differ by at most 0.05 percentage points.
-To regenerate it:
+
+**Always use `load_split()`** to get the split for training and evaluation. Don't call `make_split()` again: its result depends on the library versions, even with the same seed (in Colab with scikit-learn 1.6.1 and pandas 2.2.3, 3,236 images land in a different split). The committed file is the single source of truth.
+
+```python
+from src.data import load_metadata, load_split
+df = load_metadata().merge(load_split(), on="image_id")  # adds a "split" column
+```
+
+The file was made with the snippet below. It only reproduces the same file with scikit-learn 1.9.1 and pandas 3.0.5:
 
 ```python
 from src.data import load_metadata, make_split
@@ -36,7 +44,13 @@ drive.mount('/content/drive')
 !cd /content/data/raw && for f in *.zip; do unzip -q -o "$f"; done
 import os
 os.environ["DATA_DIR"] = "/content/data/raw"
+
+from src.data import load_metadata, load_split
+df = load_metadata().merge(load_split(), on="image_id")
+df["split"].value_counts()  # train 8011, val 2004
 ```
+
+Run this from the cloned repo folder (`%cd ANN-final-project-skin-lesion-uncertainty`) so `src` can be imported.
 
 ## Setup
 
