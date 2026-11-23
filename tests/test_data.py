@@ -90,11 +90,27 @@ def test_resolve_data_dir_order(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(from_env))
     assert resolve_data_dir(given) == given
     assert resolve_data_dir() == from_env
-    assert resolve_data_dir(tmp_path / "empty") == from_env  # falls through to DATA_DIR
+
+
+def test_resolve_data_dir_falls_back_to_data_raw(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path / "empty"))
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "data" / "raw").mkdir(parents=True)
+    (tmp_path / "data" / "raw" / LESION_GROUPINGS_CSV).touch()
+    assert str(resolve_data_dir()) == "data/raw"
+
+
+def test_resolve_data_dir_raises_on_wrong_explicit_dir(tmp_path, monkeypatch):
+    good = tmp_path / "env"
+    good.mkdir()
+    (good / LESION_GROUPINGS_CSV).touch()
+    monkeypatch.setenv("DATA_DIR", str(good))  # a valid fallback exists, but must not be used
+    with pytest.raises(FileNotFoundError):
+        resolve_data_dir(tmp_path / "empty")
 
 
 def test_resolve_data_dir_raises_when_nothing_found(tmp_path, monkeypatch):
     monkeypatch.delenv("DATA_DIR", raising=False)
     monkeypatch.chdir(tmp_path)  # so data/raw does not exist either
     with pytest.raises(FileNotFoundError):
-        resolve_data_dir(tmp_path / "empty")
+        resolve_data_dir()

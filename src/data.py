@@ -32,12 +32,16 @@ DEFAULT_DATA_DIR = "data/raw"
 
 
 def resolve_data_dir(data_dir=None):
-    """Return the data folder: the argument, then $DATA_DIR, then data/raw.
+    """Return the data folder that holds the HAM10000 files.
 
-    The first of these that contains the lesion groupings CSV is used. Raises
-    FileNotFoundError if none of them does.
+    If data_dir is given, it must contain the lesion groupings CSV, or
+    FileNotFoundError is raised (no fallback). If data_dir is None, the first of
+    $DATA_DIR and data/raw that contains it is used; FileNotFoundError if neither does.
     """
-    candidates = [data_dir, os.environ.get("DATA_DIR"), DEFAULT_DATA_DIR]
+    if data_dir is not None:
+        candidates = [data_dir]
+    else:
+        candidates = [os.environ.get("DATA_DIR"), DEFAULT_DATA_DIR]
     tried = [Path(c) for c in candidates if c]
     for folder in tried:
         if (folder / LESION_GROUPINGS_CSV).exists():
