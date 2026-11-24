@@ -3,7 +3,7 @@
 Final project for Artificial Neural Networks and Deep Learning B (DIS Copenhagen, Fall 2026).
 Danny Lenney, Jachin Choi, Ofri Geva.
 
-Can a medical vision-language model find the skin lesion cases it is unsure about, and explain them in words?
+How well does doubt flag errors in a scratch CNN, fine-tuned EfficientNetB0, and frozen BiomedCLIP with a Keras head? We compare the three classifiers and use Grad-CAM to inspect uncertain CNN predictions.
 
 ## Data
 

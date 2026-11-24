@@ -6,9 +6,9 @@ Changes to this file go through a PR like any other change. When an agent repeat
 ## What this project does
 
 We classify dermatoscope images of skin lesions (HAM10000, 7 diagnoses) and measure how unsure each model is about each image.
-We compare four models: a CNN trained from scratch, an ImageNet CNN (EfficientNetB0) that we fine-tune, and two frozen medical vision-language encoders (BiomedCLIP and MONET) with the same small Keras classifier on top. If MONET's text side doesn't work, a generic vision transformer replaces it.
+We compare a CNN trained from scratch, fine-tuned EfficientNetB0, and a frozen BiomedCLIP image encoder with a Keras classifier head.
 Doubt is measured mainly with seed ensembles and disagreement between models, with softmax confidence as the baseline. MC dropout on the two CNNs is a stretch goal. Every result is broken down by class.
-We test whether doubt points at real mistakes, and explain unsure cases with heatmaps and, where the encoder allows it, text concepts.
+We test whether doubt points at real mistakes, and inspect unsure CNN predictions with Grad-CAM heatmaps.
 The full plan and task list are in docs/plan.md.
 
 ## Folder layout

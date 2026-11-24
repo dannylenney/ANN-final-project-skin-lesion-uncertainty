@@ -1,6 +1,6 @@
 # Project plan and roadmap
 
-Last updated: Nov 16, 2026.
+Last updated: Nov 24, 2026.
 **Due: blog post + GitHub repo, Tue Dec 8, 23:59.** Group presentation after that (date on Canvas).
 
 ## How to use this file
@@ -14,7 +14,7 @@ Last updated: Nov 16, 2026.
 
 ## 1. What we're building
 
-**Research question:** Which models know when they are unsure about a skin lesion, does that doubt point at real mistakes (especially for the rare classes), and can we explain the unsure cases with pictures and words?
+**Research question:** Which models know when they are unsure about a skin lesion, does that doubt point at real mistakes (especially for the rare classes), and what do CNN heatmaps show for unsure cases?
 
 **Data:** HAM10000 (ISIC 2018 Task 3), 10,015 dermatoscope images, 7 diagnoses. Train and validation split by `lesion_id`. The official ISIC 2018 test set (1,512 images) is used once, at the end.
 
@@ -27,14 +27,11 @@ Last updated: Nov 16, 2026.
 | Scratch CNN | Small CNN, no pretraining | End to end on HAM10000 | Shows what pretraining adds |
 | ImageNet CNN | EfficientNetB0, ImageNet weights | Fine-tuned | Strong general baseline |
 | BiomedCLIP | ViT, medical figure-caption pairs | Frozen + Keras head | Medical vision-language model |
-| MONET | CLIP ViT-L/14, dermatology image-text pairs | Frozen + Keras head | Dermatology vision-language model |
-
-BiomedCLIP and MONET stay frozen on purpose. Fine-tuning their image side would break the match between image and text embeddings, and the text explanations depend on that match.
 
 **Doubt measures**
 
 - **Seed ensemble (main):** train each model several times with different seeds. Doubt = entropy of the averaged probabilities, plus the share of runs that disagree with the majority.
-- **Cross-model disagreement (main):** the same idea, across the 4 models.
+- **Cross-model disagreement (main):** the same idea, across the three models.
 - **Softmax confidence (baseline):** doubt = 1 - (top predicted probability) from a single run.
 - **MC dropout (stretch):** only on the two CNNs.
 
@@ -44,24 +41,17 @@ BiomedCLIP and MONET stay frozen on purpose. Fine-tuning their image side would 
 
 **Explanations**
 - **Heatmaps:** Grad-CAM on the two CNNs.
-- **Text concepts (Path A):** cosine similarity between an image embedding and short phrases ("pigment network", "hair", "ruler", ...), compared between MONET and BiomedCLIP.
-
-**Path A / Path B** (decided by task T1.2)
-- **A:** MONET's concept scores make visual sense, so we compare MONET's and BiomedCLIP's text explanations.
-- **B:** they don't, so we drop MONET, add a generic frozen ViT as the 4th model, and focus on heatmaps.
 
 **Hypotheses**
-- **H1:** the fine-tuned ImageNet CNN beats the scratch CNN on balanced accuracy. Open: where the frozen medical encoders land.
+- **H1:** the fine-tuned ImageNet CNN beats the scratch CNN on balanced accuracy. Open: where BiomedCLIP lands.
 - **H2:** within each class, seed-ensemble and cross-model doubt flag mistakes better than softmax confidence.
-- **H3 (Path A only):** MONET's concept scores match our concept labels better than BiomedCLIP's.
 
 **What changed after Lorenzo's feedback (Nov 10)**
 
 | His point | Our change |
 |---|---|
 | Frozen non-medical encoder will underperform | Fine-tune ImageNet CNN, add scratch CNN |
-| Follow up on MONET right away | Image side works (PR #4). Text side is T1.2, which decides Path A/B |
-| How to compare MONET vs BiomedCLIP explanations | AUROC of concept scores against hand labels (T3.4) |
+| Follow up on MONET right away | Image side works (PR #4). T1.2 recorded the concept check and scope decision |
 | Model disagreement is doubt | Cross-model disagreement is a main measure |
 | MC dropout on a frozen encoder only measures the head | Seed ensembles are the main measure. MC dropout is a stretch goal |
 | Rare classes are most confusing | Every doubt result is broken down by class |
@@ -75,11 +65,10 @@ BiomedCLIP and MONET stay frozen on purpose. Fine-tuning their image side would 
 | Must-have | Stretch (cut in this order if late) |
 |---|---|
 | Data split + loaders | MC dropout on the CNNs |
-| 4 models trained on the same split | Heatmaps for the ViT encoders |
-| At least 3 seeds per model | 5 seeds instead of 3 |
-| Doubt measures + AUROC + referral curves, per class | Derm7pt expert labels for H3 |
+| 3 models trained on the same split | Heatmaps for BiomedCLIP |
+| 3 seeds per model |  |
+| Doubt measures + AUROC + referral curves, per class |  |
 | Grad-CAM on the CNNs | Error analysis on metadata (age, body site) |
-| Concept scores + ~100 hand labels (Path A) | |
 | Unsure-cases gallery | |
 | One final test-set run | |
 | Blog post, README, presentation | |
@@ -91,9 +80,9 @@ BiomedCLIP and MONET stay frozen on purpose. Fine-tuning their image side would 
 | Week | Dates | Goal | Milestone |
 |---|---|---|---|
 | 0 | Nov 16-18 | Unblock | PR #4 and plan PR merged, data on Drive |
-| 1 | Nov 17-22 | Data + encoders | Split merged, embeddings saved, Path A/B decided |
-| 2 | Nov 23-29 | Models | All 4 models trained with 3+ seeds, validation predictions saved |
-| 3 | Nov 30-Dec 4 | Doubt + explanations | H2 and H3 answered on validation, gallery figure done |
+| 1 | Nov 17-22 | Data + encoders | Split merged, embeddings saved, concept check concluded |
+| 2 | Nov 23-29 | Models | All 3 models trained with 3 seeds, validation predictions saved |
+| 3 | Nov 30-Dec 4 | Doubt + explanations | H2 answered on validation, gallery figure done |
 | 4 | Dec 5-8 | Final + write-up | Test-set run (by Dec 5), blog and README merged by Dec 8 |
 
 Rule of thumb: if a task is more than 2 days late, raise it in the group chat and cut something from the stretch column.
@@ -105,7 +94,7 @@ Rule of thumb: if a task is more than 2 days late, raise it in the group chat an
 | Track | Tasks | Suggested owner |
 |---|---|---|
 | Data + training | T0.3, T1.1, T2.1-T2.4 | Danny |
-| Encoders + explanations | T1.2-T1.4, T3.3-T3.4 | Ofri |
+| Encoders + explanations | T1.2-T1.4, T3.3 | Ofri |
 | Doubt + evaluation | T3.1, T3.2, T3.5, T4.1 | Jachin |
 | Write-up | T4.2-T4.5 | Everyone, split by section |
 
@@ -155,17 +144,12 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
   - [ ] All 7 classes in val; class shares in train vs val differ by under 2 percentage points (tested)
   - [ ] Split CSV committed and documented in README
 
-**T1.2 MONET vs BiomedCLIP concept check** [Experiment] (Ofri; decides Path A/B)
-- About 100 images, 3 phrases (one clinical like "pigment network", two artifacts like "hair" and "ruler").
-- Score each image against each phrase with both models (cosine similarity of image and text embeddings). Show each model's top 5 images per phrase.
-- Done when:
-  - [ ] Figure `results/figures/concept_top5.png` (2 models x 3 phrases x 5 images)
-  - [ ] Results section of the issue says, per phrase and model, how many of the top 5 actually show the concept
-  - [ ] Path A or B decision written into this file
+**T1.2 MONET vs BiomedCLIP concept check (#9)**
+- On 100 training images, both models retrieved visible hair, neither top five showed a recognizable ruler, and the pigment-network rankings were inconclusive.
+- Decision: use the three classifiers in section 1 and CNN heatmaps. The check assessed concept retrieval only.
 
 **T1.3 BiomedCLIP encoder** [Feature]
-- `src/biomedclip_encoder.py` with the same interface as `src/monet_encoder.py`: `load_...()` and `extract_embeddings(...)`, plus a text-embedding function for concept scores.
-- Add a text-embedding function to the MONET module too, if T1.2 didn't already.
+- `src/biomedclip_encoder.py` with the same interface as `src/monet_encoder.py`: `load_...()` and `extract_embeddings(...)`.
 - Done when:
   - [ ] Unit tests with fake models pass
   - [ ] Smoke test on one real image prints the embedding shape (recorded in the PR)
@@ -174,9 +158,9 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
 **T1.4 Extract embeddings for all images** [Feature] (needs T1.1, T1.3; Colab GPU)
 - `notebooks/01_extract_embeddings.ipynb` calls `src/`. Write the files to Drive `MyDrive/ANN-project/embeddings/` (never to git).
 - Done when:
-  - [ ] Each encoder has a train/val file with one row per training image and a test file with one row per test image, each with a matching `image_id` file
+  - [ ] BiomedCLIP has a train/val file with one row per training image and a test file with one row per test image, each with a matching `image_id` file
   - [ ] No NaNs (checked in the notebook)
-  - [ ] Runtime per encoder written in the PR (helps plan the seed runs)
+  - [ ] Extraction runtime written in the PR (helps plan the seed runs)
   - [ ] Notebook outputs cleared before commit
 
 ### Phase 2: Models (Nov 21-29)
@@ -187,7 +171,7 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
   - `train_head(X_train, y_train, X_val, y_val, seed)`: Adam, class weights, early stopping on validation loss.
 - Logistic regression on the same embeddings as a sanity baseline.
 - Done when:
-  - [ ] Head trains on MONET and BiomedCLIP embeddings
+  - [ ] Head trains on BiomedCLIP embeddings
   - [ ] Validation predictions saved in the shared format (section 6)
   - [ ] Validation balanced accuracy for head vs logistic regression in the PR
 
@@ -205,7 +189,7 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
   - [ ] Time per run recorded
 
 **T2.4 Seed runs** [Experiment] (needs T2.1-T2.3)
-- Train every model with seeds `[0, 1, 2]`, plus 3 and 4 if time allows (decide using the recorded runtimes).
+- Train the three models with seeds `[0, 1, 2]` for nine runs.
 - Done when:
   - [ ] Validation predictions for every model x seed saved
   - [ ] Table: validation balanced accuracy per model as mean and spread over seeds, plus recall per class
@@ -231,16 +215,10 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
   - [ ] Unit test checks the heatmap's shape and value range
   - [ ] A sample figure for 4 validation images per CNN
 
-**T3.4 Concept explanations** [Experiment] (H3; Path A only)
-- Two of us hand-label about 100 validation images for 3-5 concepts (hair, ruler, ink, ...). Save as `results/labels/concept_labels.csv`. Where the two labelers disagree, agree on one label and note how often that happened.
-- AUROC of each model's concept score against the labels, per concept.
-- Done when:
-  - [ ] Labels CSV committed with a short note on how we labeled
-  - [ ] `results/figures/concept_auroc.png`
-  - [ ] H3 answered in Results
+**T3.4 Concept explanations (#19)** — skipped after T1.2.
 
-**T3.5 Unsure-cases gallery** [Feature] (needs T3.2-T3.4)
-- For each class, the 3 most doubtful validation images: image, true vs predicted label, doubt score, Grad-CAM, and the top 3 concepts (Path A).
+**T3.5 Unsure-cases gallery** [Feature] (needs T3.2 and T3.3)
+- For each class, the 3 most doubtful validation images: image, true vs predicted label, doubt score, and Grad-CAM for the CNNs.
 - Done when:
   - [ ] `results/figures/unsure_gallery.png`, readable when shrunk to blog width
   - [ ] Each of us has written one sentence about what the unsure cases have in common
@@ -256,12 +234,12 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
 
 **T4.2 Blog post** [Feature] (draft by Dec 6, final Dec 8)
 - `docs/blog.md`, or wherever Canvas says. Non-technical: a reader who has never trained a model should follow it.
-- Outline: the problem → the data → four models in one picture → do models know when they're unsure? (referral curve) → the unsure cases (gallery) → can they explain themselves? (heatmaps, concepts) → limitations → how we used AI → sources.
+- Outline: the problem → the data → three models in one picture → do models know when they're unsure? (referral curve) → the unsure cases (gallery) → can they explain themselves? (CNN heatmaps) → limitations → how we used AI → sources.
 - Done when:
   - [ ] All three of us have reviewed it in the PR
   - [ ] Every number in it matches a table in an experiment issue
   - [ ] Limitations cover: not a medical device; HAM10000 is mostly fair skin from two clinics; only half the labels are confirmed by histopathology
-  - [ ] Citations: HAM10000, MONET, BiomedCLIP, EfficientNet, Grad-CAM, plus any code we took from elsewhere
+  - [ ] Citations: HAM10000, BiomedCLIP, EfficientNet, Grad-CAM, plus any code we took from elsewhere
 
 **T4.3 Final README** [Feature]
 - Done when:
@@ -286,9 +264,9 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
 ## 6. Shared conventions
 
 - **Class order everywhere:** `akiec, bcc, bkl, df, mel, nv, vasc` (alphabetical). Map the ISIC column names to this order explicitly; don't rely on CSV column order.
-- **Seeds:** `[0, 1, 2, 3, 4]`. Use the first 3 if time is short.
+- **Seeds:** `[0, 1, 2]`.
 - **Paths:** read the data folder from `DATA_DIR`; never hard-code paths.
-- **Prediction files:** `results/predictions/<model>_seed<k>_<split>.csv`, with columns `image_id, label, p_akiec, p_bcc, p_bkl, p_df, p_mel, p_nv, p_vasc`. CSV because `.npy` is git-ignored. Model names: `scratch_cnn, imagenet_cnn, biomedclip, monet` (or `generic_vit` on Path B).
+- **Prediction files:** `results/predictions/<model>_seed<k>_<split>.csv`, with columns `image_id, label, p_akiec, p_bcc, p_bkl, p_df, p_mel, p_nv, p_vasc`. CSV because `.npy` is git-ignored. Model names: `scratch_cnn, imagenet_cnn, biomedclip`.
 - **Figures:** `results/figures/`, PNG, with a title and axis labels a non-technical reader understands.
 
 ## 7. Workflow habits (part of the grade)
@@ -302,7 +280,6 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
 ## 8. Open questions
 
 - For frozen encoders, seed ensembles only vary the head. Is cross-model disagreement enough? (T0.4)
-- Which concepts and phrases to use in T1.2 and T3.4. Ofri proposes them in T1.2.
 - Can we get Derm7pt in time? Stretch only.
 - Presentation date and blog format: check Canvas.
 
@@ -311,6 +288,5 @@ Whoever doesn't own a task reviews it. That way everyone reads every part of the
 | Risk | Fallback |
 |---|---|
 | Colab GPU limits slow down CNN seed runs | 3 seeds, smaller image size, save checkpoints to Drive |
-| MONET concept scores don't make sense | Path B (see section 1) |
 | A class has too few validation errors for AUROC | Report counts and show examples instead of a number |
 | Running late | Cut from the stretch column in order; never cut the final test run or the write-up |
